@@ -18,7 +18,7 @@ class BooksApp extends React.Component {
     return (
       <div className="app">
 
-        <Route path="/add" render={() => (
+        <Route path="/search" render={() => (
           <div className="search-books">
             <div className="search-books-bar">
               <Link to="/" className="close-search" >Close</Link>
@@ -199,7 +199,7 @@ class BooksApp extends React.Component {
               </div>
             </div>
             <div className="open-search">
-              <Link to="/add">Add a book</Link>
+              <Link to="/search">Add a book</Link>
             </div>
           </div>
         )}
