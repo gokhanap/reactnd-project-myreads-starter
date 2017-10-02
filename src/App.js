@@ -1,7 +1,39 @@
 import React, { Component } from 'react'
 import { Route, Link } from 'react-router-dom'
+import escapeRegExp from 'escape-string-regexp'
+import sortBy from 'sort-by'
 import * as BooksAPI from './BooksAPI'
 import './App.css'
+
+class BookShelfChanger extends React.Component {
+
+  handleChange = (event) => {
+    this.setState({shelf: event.target.value})
+    this.props.onChangeShelf(event.target.value, this.props.book)
+    console.log(event.target.value)
+    console.log(this.props.book)
+  }
+
+  render() {
+
+    return (
+      <div className="book-shelf-changer">
+        <select onChange={this.handleChange}>
+          <option value="none" disabled>Move to...</option>
+          <option value="currentlyReading">Currently Reading</option>
+          <option value="wantToRead">Want to Read</option>
+          <option value="read">Read</option>
+          <option value="none">None</option>
+        </select>
+      </div>
+    )
+  }
+}
+
+
+
+
+
 
 
 class ListBooks extends React.Component {
@@ -23,15 +55,9 @@ class ListBooks extends React.Component {
                 <div className="book">
                   <div className="book-top">
                     <div className="book-cover" style={{ width: 128, height: 193, backgroundImage: `url('${book.imageLinks.thumbnail})` }}></div>
-                    <div className="book-shelf-changer">
-                      <select>
-                        <option value="none" disabled>Move to...</option>
-                        <option value="currentlyReading">Currently Reading</option>
-                        <option value="wantToRead">Want to Read</option>
-                        <option value="read">Read</option>
-                        <option value="none">None</option>
-                      </select>
-                    </div>
+
+                    // <BookShelfChanger onChangeShelf={this.props.onChangeShelf} book={book}/>
+
                   </div>
                   <div className="book-title">{book.title}</div>
                   <div className="book-authors">{book.authors}</div>
@@ -76,6 +102,8 @@ class SearchBox extends React.Component {
   render() {
 
     const { query } = this.state
+
+
 
     return (
       <div className="search-books">
@@ -127,6 +155,39 @@ class BooksApp extends React.Component {
     })
   }
 
+  changeShelf = (targetshelf, book) => {
+    //console.log(this.state.books[targetshelf].concat(book))
+
+    targetshelf === 'currentlyReading' &&
+      this.setState((state) => ({
+        books: {
+          currentlyReading: state.books.currentlyReading.concat([ book ]),
+          read: state.books.read.filter((b) => b.id !== book.id),
+          wantToRead: state.books.wantToRead.filter((b) => b.id !== book.id)
+        }
+      }))
+
+    targetshelf === 'read' &&
+      this.setState((state) => ({
+        books: {
+          currentlyReading: state.books.currentlyReading.filter((b) => b.id !== book.id),
+          read: state.books.read.concat([ book ]),
+          wantToRead: state.books.wantToRead.filter((b) => b.id !== book.id)
+        }
+      }))
+
+    targetshelf === 'wantToRead' &&
+      this.setState((state) => ({
+        books: {
+          currentlyReading: state.books.currentlyReading.filter((b) => b.id !== book.id),
+          read: state.books.read.filter((b) => b.id !== book.id),
+          wantToRead: state.books.wantToRead.concat([ book ])
+        }
+      }))
+
+    //BooksAPI.update(book, book.shelf)
+  }
+
   render() {
     return (
       <div className="app">
@@ -138,9 +199,12 @@ class BooksApp extends React.Component {
             </div>
             <div className="list-books-content">
               <div className="bookshelf">
-              <ListBooks books={this.state.books.currentlyReading} shelf='Current Reading' />
-              <ListBooks books={this.state.books.read} shelf='Read'/>
-              <ListBooks books={this.state.books.wantToRead} shelf='Want To Read'/>
+              <ListBooks books={this.state.books.currentlyReading} shelf='Current Reading'
+              onChangeShelf={this.changeShelf}/>
+              <ListBooks books={this.state.books.read} shelf='Read'
+              onChangeShelf={this.changeShelf}/>
+              <ListBooks books={this.state.books.wantToRead} shelf='Want To Read'
+              onChangeShelf={this.changeShelf}/>
               </div>
             </div>
           </div>
@@ -153,7 +217,7 @@ class BooksApp extends React.Component {
           </div>
         )}/>
 
-        <Route exact path="/e" render={() => (
+        <Route exact path="/static" render={() => (
           <div className="list-books">
             <div className="list-books-title">
               <h1>MyReads</h1>
