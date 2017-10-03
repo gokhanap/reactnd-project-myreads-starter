@@ -5,7 +5,7 @@ import sortBy from 'sort-by'
 import * as BooksAPI from './BooksAPI'
 import './App.css'
 
-class BookShelfChanger extends React.Component {
+class DisplayBook extends React.Component {
 
 
   handleChange = (event) => {
@@ -16,16 +16,30 @@ class BookShelfChanger extends React.Component {
   }
 
   render() {
-
+    const book = this.props.book
     return (
-      <div className="book-shelf-changer">
-        <select value={this.props.book.shelf} onChange={this.handleChange}>
-          <option value="none" disabled>Move to...</option>
-          <option value="currentlyReading">Currently Reading</option>
-          <option value="wantToRead">Want to Read</option>
-          <option value="read">Read</option>
-        </select>
+
+
+      <div className="book">
+        <div className="book-top">
+          <div className="book-cover" style={{ width: 128, height: 193, backgroundImage: `url('${book.imageLinks.thumbnail})` }}></div>
+
+
+            <div className="book-shelf-changer">
+              <select value={this.props.book.shelf} onChange={this.handleChange}>
+                <option value="none" disabled>Move to...</option>
+                <option value="currentlyReading">Currently Reading</option>
+                <option value="wantToRead">Want to Read</option>
+                <option value="read">Read</option>
+              </select>
+            </div>
+
+        </div>
+        <div className="book-title">{book.title}</div>
+        <div className="book-authors">{book.authors}</div>
       </div>
+
+
     )
   }
 }
@@ -33,15 +47,10 @@ class BookShelfChanger extends React.Component {
 
 
 
-
-
-
-class ListBooks extends React.Component {
-
+class DisplayShelf extends React.Component {
 
 
   render() {
-
     return (
       <div>
 
@@ -51,18 +60,7 @@ class ListBooks extends React.Component {
             <ol className="books-grid">
 
             {this.props.books.map((book) => (
-              <li key={book.id}>
-                <div className="book">
-                  <div className="book-top">
-                    <div className="book-cover" style={{ width: 128, height: 193, backgroundImage: `url('${book.imageLinks.thumbnail})` }}></div>
-
-                    // <BookShelfChanger onChangeShelf={this.props.onChangeShelf} book={book}/>
-
-                  </div>
-                  <div className="book-title">{book.title}</div>
-                  <div className="book-authors">{book.authors}</div>
-                </div>
-              </li>
+                <DisplayBook key={book.id} onChangeShelf={this.props.onChangeShelf} book={book}/>
             ))}
 
             </ol>
@@ -125,7 +123,13 @@ class SearchBox extends React.Component {
           </div>
         </div>
         <div className="search-books-results">
-          <ol className="books-grid"></ol>
+          <ol className="books-grid">
+
+            <DisplayShelf books={this.state.books} shelf='Results'
+            onChangeShelf={this.changeShelf}/>
+
+
+          </ol>
         </div>
       </div>
     )
@@ -185,8 +189,13 @@ class BooksApp extends React.Component {
         }
       }))
 
-    //BooksAPI.update(book, book.shelf)
+    //BooksAPI.update(book, targetshelf)
   }
+
+  addBook = () => {
+
+  }
+
 
   render() {
     return (
@@ -199,11 +208,11 @@ class BooksApp extends React.Component {
             </div>
             <div className="list-books-content">
               <div className="bookshelf">
-              <ListBooks books={this.state.books.currentlyReading} shelf='Current Reading'
+              <DisplayShelf books={this.state.books.currentlyReading} shelf='Current Reading'
               onChangeShelf={this.changeShelf}/>
-              <ListBooks books={this.state.books.read} shelf='Read'
+              <DisplayShelf books={this.state.books.read} shelf='Read'
               onChangeShelf={this.changeShelf}/>
-              <ListBooks books={this.state.books.wantToRead} shelf='Want To Read'
+              <DisplayShelf books={this.state.books.wantToRead} shelf='Want To Read'
               onChangeShelf={this.changeShelf}/>
               </div>
             </div>
@@ -212,8 +221,7 @@ class BooksApp extends React.Component {
 
         <Route path="/search" render={() => (
           <div>
-            <SearchBox name="gokhan" />
-            <ListBooks books={this.state.books.read} shelf=''/>
+            <SearchBox/>
           </div>
         )}/>
 
