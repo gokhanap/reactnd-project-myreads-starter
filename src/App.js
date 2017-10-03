@@ -52,7 +52,6 @@ class DisplayShelf extends React.Component {
 
   render() {
     return (
-      <div>
 
         <div className="bookshelf">
           <h2 className="bookshelf-title">{this.props.shelf}</h2>
@@ -67,12 +66,6 @@ class DisplayShelf extends React.Component {
           </div>
         </div>
 
-
-
-        <div className="open-search">
-          <Link to="/search">Add a book</Link>
-        </div>
-      </div>
     )
   }
 }
@@ -85,24 +78,43 @@ class DisplayShelf extends React.Component {
 
 class SearchBox extends React.Component {
   state = {
-    query: ''
+    query: '',
+    books: []
   }
 
   updateQuery = (query) => {
     this.setState({ query: query.trim() })
-    console.log(query)
+    this.search(query)
   }
 
   clearQuery = () => {
     this.setState({ query: '' })
   }
 
+
+  search = (query) => {
+    BooksAPI.search(query, '10').then((books) => {
+      this.setState({
+        books: books
+      })
+    })
+  }
+
+
   render() {
 
-    const { query } = this.state
+    const { onChangeShelf } = this.props
+    let { query, books } = this.state
 
+    let showingBooks
 
-
+    if (query) {
+      const match = new RegExp(escapeRegExp(query), 'i')
+      showingBooks = books.filter((book) => match.test(book.title))
+    } else {
+      showingBooks = books
+    }
+    showingBooks.sort(sortBy('title'))
     return (
       <div className="search-books">
         <div className="search-books-bar">
@@ -125,8 +137,10 @@ class SearchBox extends React.Component {
         <div className="search-books-results">
           <ol className="books-grid">
 
-            <DisplayShelf books={this.state.books} shelf='Results'
-            onChangeShelf={this.changeShelf}/>
+
+            {(query !== '' && <DisplayShelf books={showingBooks} shelf='Results'
+            onChangeShelf={this.props.onChangeShelf}/>)}
+
 
 
           </ol>
@@ -192,11 +206,6 @@ class BooksApp extends React.Component {
     //BooksAPI.update(book, targetshelf)
   }
 
-  addBook = () => {
-
-  }
-
-
   render() {
     return (
       <div className="app">
@@ -208,12 +217,15 @@ class BooksApp extends React.Component {
             </div>
             <div className="list-books-content">
               <div className="bookshelf">
-              <DisplayShelf books={this.state.books.currentlyReading} shelf='Current Reading'
-              onChangeShelf={this.changeShelf}/>
-              <DisplayShelf books={this.state.books.read} shelf='Read'
-              onChangeShelf={this.changeShelf}/>
-              <DisplayShelf books={this.state.books.wantToRead} shelf='Want To Read'
-              onChangeShelf={this.changeShelf}/>
+                <DisplayShelf books={this.state.books.currentlyReading} shelf='Current Reading'
+                onChangeShelf={this.changeShelf}/>
+                <DisplayShelf books={this.state.books.read} shelf='Read'
+                onChangeShelf={this.changeShelf}/>
+                <DisplayShelf books={this.state.books.wantToRead} shelf='Want To Read'
+                onChangeShelf={this.changeShelf}/>
+                <div className="open-search">
+                  <Link to="/search">Add a book</Link>
+                </div>
               </div>
             </div>
           </div>
@@ -221,7 +233,8 @@ class BooksApp extends React.Component {
 
         <Route path="/search" render={() => (
           <div>
-            <SearchBox/>
+            <SearchBox books={this.state.books.wantToRead}
+                onChangeShelf={this.changeShelf}/>
           </div>
         )}/>
 
