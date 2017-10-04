@@ -5,41 +5,58 @@ import sortBy from 'sort-by'
 import * as BooksAPI from './BooksAPI'
 import './App.css'
 
+
 class DisplayBook extends React.Component {
 
-
   handleChange = (event) => {
-    this.props.book.shelf = event.target.value
     this.props.onChangeShelf(event.target.value, this.props.book)
-    //console.log(event.target.value)
-    console.log(this.props.book.shelf)
   }
 
   render() {
     const book = this.props.book
-    return (
+     // console.log(book.shelf)
+      return (
+
+        <div className="book">
+          <div className="book-top">
+            <div className="book-cover" style={{ width: 128, height: 193, backgroundImage: `url('${book.imageLinks.thumbnail})` }}></div>
 
 
-      <div className="book">
-        <div className="book-top">
-          <div className="book-cover" style={{ width: 128, height: 193, backgroundImage: `url('${book.imageLinks.thumbnail})` }}></div>
 
 
-            <div className="book-shelf-changer">
-              <select value={this.props.book.shelf} onChange={this.handleChange}>
-                <option value="none" disabled>Move to...</option>
-                <option value="currentlyReading">Currently Reading</option>
-                <option value="wantToRead">Want to Read</option>
-                <option value="read">Read</option>
-              </select>
-            </div>
+              {this.props.shelfTitle === 'Results' && (
+              <div className="book-shelf-changer">
+                <select defaultValue="none" onChange={this.handleChange}>
+                  <option value="none" disabled>Move to...</option>
+                  <option value="currentlyReading">Currently Reading</option>
+                  <option value="wantToRead">Want to Read</option>
+                  <option value="read">Read</option>
+                </select>
+              </div>
+              )}
 
+
+
+
+              {(book.shelf === 'currentlyReading' ||
+                book.shelf === 'read' ||
+                book.shelf === 'wantToRead') && (
+              <div className="book-shelf-changer">
+                <select value={book.shelf} onChange={this.handleChange}>
+                  <option value="none" disabled>Move to...</option>
+                  <option value="currentlyReading">Currently Reading</option>
+                  <option value="wantToRead">Want to Read</option>
+                  <option value="read">Read</option>
+                </select>
+              </div>
+              )}
+
+
+
+          </div>
+          <div className="book-title">{book.title}</div>
+          <div className="book-authors">{book.authors}</div>
         </div>
-        <div className="book-title">{book.title}</div>
-        <div className="book-authors">{book.authors}</div>
-      </div>
-
-
     )
   }
 }
@@ -47,19 +64,24 @@ class DisplayBook extends React.Component {
 
 
 
+
 class DisplayShelf extends React.Component {
+
+
+
 
 
   render() {
     return (
 
         <div className="bookshelf">
-          <h2 className="bookshelf-title">{this.props.shelf}</h2>
+          <h2 className="bookshelf-title">{this.props.shelfTitle}</h2>
           <div className="bookshelf-books">
             <ol className="books-grid">
 
             {this.props.books.map((book) => (
-                <DisplayBook key={book.id} onChangeShelf={this.props.onChangeShelf} book={book}/>
+                <DisplayBook key={book.id} onChangeShelf={this.props.onChangeShelf}
+                shelfTitle={this.props.shelfTitle} book={book}/>
             ))}
 
             </ol>
@@ -104,7 +126,7 @@ class SearchBox extends React.Component {
   render() {
 
     const { onChangeShelf } = this.props
-    let { query, books } = this.state
+    const { query, books } = this.state
 
     let showingBooks
 
@@ -138,9 +160,8 @@ class SearchBox extends React.Component {
           <ol className="books-grid">
 
 
-            {(query !== '' && <DisplayShelf books={showingBooks} shelf='Results'
-            onChangeShelf={this.props.onChangeShelf}/>)}
-
+            {(query !== '' && <DisplayShelf books={showingBooks} shelfTitle='Results'
+            onChangeShelf={onChangeShelf}/>)}
 
 
           </ol>
@@ -168,13 +189,15 @@ class BooksApp extends React.Component {
         books: {
           currentlyReading: books.filter((book) => book.shelf === 'currentlyReading'),
           read: books.filter((book) => book.shelf === 'read'),
-          wantToRead: books.filter((book) => book.shelf === 'wantToRead'),
+          wantToRead: books.filter((book) => book.shelf === 'wantToRead')
         }})
     })
   }
 
+
   changeShelf = (targetshelf, book) => {
-    //console.log(this.state.books[targetshelf].concat(book))
+
+    book.shelf = targetshelf
 
     targetshelf === 'currentlyReading' &&
       this.setState((state) => ({
@@ -206,6 +229,8 @@ class BooksApp extends React.Component {
     //BooksAPI.update(book, targetshelf)
   }
 
+
+
   render() {
     return (
       <div className="app">
@@ -217,11 +242,11 @@ class BooksApp extends React.Component {
             </div>
             <div className="list-books-content">
               <div className="bookshelf">
-                <DisplayShelf books={this.state.books.currentlyReading} shelf='Current Reading'
+                <DisplayShelf books={this.state.books.currentlyReading} shelfTitle='Current Reading'
                 onChangeShelf={this.changeShelf}/>
-                <DisplayShelf books={this.state.books.read} shelf='Read'
+                <DisplayShelf books={this.state.books.read} shelfTitle='Read'
                 onChangeShelf={this.changeShelf}/>
-                <DisplayShelf books={this.state.books.wantToRead} shelf='Want To Read'
+                <DisplayShelf books={this.state.books.wantToRead} shelfTitle='Want To Read'
                 onChangeShelf={this.changeShelf}/>
                 <div className="open-search">
                   <Link to="/search">Add a book</Link>
