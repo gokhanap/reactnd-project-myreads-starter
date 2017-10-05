@@ -1,59 +1,72 @@
 import React from 'react'
+import * as BooksAPI from './BooksAPI'
 
 class DisplayBook extends React.Component {
 
   state = {
+    title: '',
+    authors: '',
+    imageLinks: '',
+    id: '',
+    shelf: ''
   }
 
-  componentWillMount() {
-    let comparison = []
-    comparison = this.props.myBooks.filter((mybook) => mybook.id === this.props.book.id)
-    comparison.length > 0 ? this.setState({onMyLibrary: 'yes'}) : this.setState({onMyLibrary: 'no'})
+  componentDidMount() {
+    BooksAPI.get(this.props.id).then((book) => {
+      this.setState({
+        title: book.title,
+        authors: book.authors,
+        imageLinks: book.imageLinks,
+        id: book.id,
+        shelf: book.shelf
+        })
+    })
   }
 
   handleChange = (event) => {
+    this.setState({shelf: event.target.value})
+    BooksAPI.update(this.props.book, event.target.value)
     this.props.onChangeShelf(event.target.value, this.props.book)
   }
 
   render() {
-    let onMyLibrary = this.state.onMyLibrary
-    const myBooks = this.props.myBooks
-    const { title, authors, imageLinks, id } = this.props.book
-    const librarySource = myBooks.filter((mybook) => mybook.id === id)
+    const { title, authors, imageLinks, shelf } = this.state
+    return (
+      <div>
+        {(title !== '' &&
+          <div className="book">
+            <div className="book-top">
+              <div className="book-cover" style={{ backgroundImage: `url('${imageLinks.thumbnail})` }}></div>
 
-      return (
+              {(shelf !== 'none' &&
+                <div className="book-shelf-changer">
+                  <select value={shelf} onChange={this.handleChange}>
+                    <option value="none" disabled>Move to...</option>
+                    <option value="currentlyReading">Currently Reading</option>
+                    <option value="wantToRead">Want to Read</option>
+                    <option value="read">Read</option>
+                    <option value="none">Remove</option>
+                  </select>
+                </div>
+              )}
 
-        <div className="book">
-          <div className="book-top">
-            <div className="book-cover" style={{ backgroundImage: `url('${imageLinks.thumbnail})` }}></div>
+              {(shelf === 'none' &&
+                <div className="book-shelf-changer add">
+                  <select defaultValue="none" onChange={this.handleChange}>
+                    <option value="none" disabled>Add to...</option>
+                    <option value="currentlyReading">Currently Reading</option>
+                    <option value="wantToRead">Want to Read</option>
+                    <option value="read">Read</option>
+                  </select>
+                </div>
+              )}
 
-            {(onMyLibrary === 'yes' &&
-              <div className="book-shelf-changer">
-                <select value={librarySource[0].shelf} onChange={this.handleChange}>
-                  <option value="none" disabled>Move to...</option>
-                  <option value="currentlyReading">Currently Reading</option>
-                  <option value="wantToRead">Want to Read</option>
-                  <option value="read">Read</option>
-                  <option value="remove">Remove</option>
-                </select>
-              </div>
-            )}
-
-            {(onMyLibrary === 'no' &&
-              <div className="book-shelf-changer add">
-                <select defaultValue="none" onChange={this.handleChange}>
-                  <option value="none" disabled>Add to...</option>
-                  <option value="currentlyReading">Currently Reading</option>
-                  <option value="wantToRead">Want to Read</option>
-                  <option value="read">Read</option>
-                </select>
-              </div>
-            )}
-
+            </div>
+            <div className="book-title">{title}</div>
+            <div className="book-authors">{authors ? authors.join(', '): ''}</div>
           </div>
-          <div className="book-title">{title}</div>
-          <div className="book-authors">{authors ? authors.join(', '): ''}</div>
-        </div>
+        )}
+      </div>
     )
   }
 }

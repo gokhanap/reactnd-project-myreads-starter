@@ -29,7 +29,6 @@ class SearchBox extends React.Component {
   }
 
   render() {
-    const { onChangeShelf } = this.props
     const { query, books } = this.state
     let showingBooks
     if (books.length > 0) {
@@ -39,6 +38,7 @@ class SearchBox extends React.Component {
       showingBooks = books
     }
     books.length > 0 && showingBooks.sort(sortBy('title'))
+
     return (
       <div className="search-books">
         <div className="search-books-bar">
@@ -52,17 +52,21 @@ class SearchBox extends React.Component {
               However, remember that the BooksAPI.search method DOES search by title or author. So, don't worry if
               you don't find a specific author or title. Every search is limited by search terms.
             */}
-            <input type="text" placeholder="Search by title or author" value={query}
+            <input autoFocus type="text" placeholder="Search by title or author" value={query}
             onChange={(event) => this.updateQuery(event.target.value)
             }/>
           </div>
         </div>
         <div className="search-books-results">
           <ol className="books-grid">
-
-            {(books.length > 0 && <DisplayShelf books={showingBooks} myBooks={this.props.myBooks} shelfTitle='Results'
-            onChangeShelf={onChangeShelf}/>)}
-
+            {(books.length > 0 &&
+              <DisplayShelf
+              shelfTitle='Results'
+              shelf='results'
+              books={books}
+              onChangeShelf={this.props.onChangeShelf}
+              />
+              )}
           </ol>
         </div>
       </div>
