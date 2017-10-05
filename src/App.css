@@ -161,9 +161,15 @@ body, .app {
   cursor: pointer;
 }
 
+.add {
+  background-image: url('./icons/add.svg');
+}
+
 /* book cover */
 
 .book-cover {
+  width: 128px;
+  height: 193px;
   box-shadow: 0 3px 6px rgba(0,0,0,0.16), 0 3px 6px rgba(0,0,0,0.23);
   background: #eee;
 }
